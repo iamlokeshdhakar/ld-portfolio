@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { caseStudies, getCaseStudy } from '../../../lib/case-studies.mjs';
 import { ProjectVisual } from '../../portfolio-sections';
+import AxyCaseStudy from '../../axy-case-study';
+import { axyStories } from '../../../lib/axy-stories.mjs';
 
 export function generateStaticParams() {
   return caseStudies.map(({ slug }) => ({ slug }));
@@ -17,6 +19,8 @@ export default async function CaseStudyPage({ params }) {
   const study = getCaseStudy(slug);
   if (!study) notFound();
   const next = caseStudies[(caseStudies.indexOf(study) + 1) % caseStudies.length];
+
+  if (axyStories[slug]) return <AxyCaseStudy story={axyStories[slug]} next={next} />;
 
   return <main className={`story-page story-page--${study.color}`}>
     <header className="story-header"><a className="brand" href="/" aria-label="Lokesh Dhakar, home">ld<span>.</span></a><a href="/#work" className="story-back">← <span>Back to selected work</span></a><a className="story-contact" href="mailto:lokeshdhakar1404@gmail.com">Let’s talk <span aria-hidden="true">↗</span></a></header>
