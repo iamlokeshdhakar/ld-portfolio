@@ -9,6 +9,7 @@ const links = [
   { label: 'Work', href: '#work' },
   { label: 'Experience', href: '#experience' },
   { label: 'Skills', href: '#skills' },
+  { label: 'GitHub', href: '#github' },
 ];
 
 export default function PortfolioHero() {
