@@ -1,4 +1,6 @@
 import './globals.css';
+import 'lenis/dist/lenis.css';
+import SmoothScroll from './smooth-scroll';
 
 export const metadata = {
   title: 'Lokesh Dhakar — Founding Engineer · Full-stack & Applied AI',
@@ -6,5 +8,5 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body><SmoothScroll />{children}</body></html>;
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scrollProgress, smoothProgress } from '../lib/motion.mjs';
+import { scrollProgress, getSamePageAnchor } from '../lib/motion.mjs';
 
 test('scroll progress stays between zero and one', () => {
   assert.equal(scrollProgress(-100, 1000), 0);
@@ -9,11 +9,13 @@ test('scroll progress stays between zero and one', () => {
   assert.equal(scrollProgress(100, 0), 0);
 });
 
-test('smooth progress approaches the target consistently over time', () => {
-  assert.equal(smoothProgress(0.4, 0.4, 16), 0.4);
-  assert.equal(smoothProgress(0, 1, 0), 0);
-  const oneStep = smoothProgress(0, 1, 32);
-  const twoSteps = smoothProgress(smoothProgress(0, 1, 16), 1, 16);
-  assert.ok(oneStep > 0 && oneStep < 1);
-  assert.ok(Math.abs(oneStep - twoSteps) < 0.000001);
+test('only same-page links with a hash are handled as in-page navigation', () => {
+  const current = 'https://example.com/case-studies?view=all';
+  assert.equal(getSamePageAnchor('#work', current), '#work');
+  assert.equal(getSamePageAnchor('/case-studies?view=all#retrieval', current), '#retrieval');
+  assert.equal(getSamePageAnchor('/#work', current), null);
+  assert.equal(getSamePageAnchor('https://other.example/case-studies#work', current), null);
+  assert.equal(getSamePageAnchor('/case-studies?view=other#work', current), null);
+  assert.equal(getSamePageAnchor('mailto:hello@example.com', current), null);
 });
+

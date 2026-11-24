@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { scrollProgress, smoothProgress } from '../lib/motion.mjs';
+import { scrollProgress } from '../lib/motion.mjs';
 import PortfolioSections from './portfolio-sections';
 
 const links = [
@@ -21,32 +21,23 @@ export default function PortfolioHero() {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
     let lastDark = false;
-    let current = 0;
-    let target = 0;
-    let previousTime = 0;
 
-    const update = (time) => {
+    const update = () => {
       frame = 0;
       if (!story) return;
       const distance = story.offsetHeight - window.innerHeight;
       const storyRect = story.getBoundingClientRect();
-      target = scrollProgress(-storyRect.top, distance);
-      const elapsed = previousTime ? Math.min(time - previousTime, 64) : 16;
-      previousTime = time;
-      current = media.matches ? target : smoothProgress(current, target, elapsed);
-      if (Math.abs(target - current) < 0.001) current = target;
-      story.style.setProperty('--progress', String(current));
+      const progress = scrollProgress(-storyRect.top, distance);
+      story.style.setProperty('--progress', String(progress));
       const onDarkSection = [...document.querySelectorAll('[data-header-theme="light"]')].some((section) => {
         const rect = section.getBoundingClientRect();
         return rect.top <= 45 && rect.bottom > 45;
       });
-      const nextDark = onDarkSection || (storyRect.bottom > 45 && current > 0.56);
+      const nextDark = onDarkSection || (storyRect.bottom > 45 && progress > 0.45);
       if (nextDark !== lastDark) {
         lastDark = nextDark;
         setDarkScene(nextDark);
       }
-      if (current !== target) frame = window.requestAnimationFrame(update);
-      else previousTime = 0;
     };
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(update);
@@ -103,7 +94,7 @@ export default function PortfolioHero() {
         <button className="menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(!menuOpen)}>
           <span></span><span></span>
         </button>
-        <nav id="mobile-menu" className={`mobile-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Mobile navigation" hidden={!menuOpen}>
+        <nav id="mobile-menu" className={`mobile-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Mobile navigation" hidden={!menuOpen} data-lenis-prevent>
           <p>Find your way</p>
           <a href="#top" onClick={() => setMenuOpen(false)}>Home <span>01</span></a>
           {links.map((link, index) => <a key={link.label} href={link.href} onClick={() => setMenuOpen(false)}>{link.label} <span>0{index + 2}</span></a>)}
