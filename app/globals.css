@@ -366,6 +366,7 @@ section[id], footer[id] { scroll-margin-top: 5.5rem; }
 .eng-index { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.2rem; padding-top: 0; }
 .eng-index-card { display: flex; flex-direction: column; justify-content: space-between; gap: 6rem; min-height: 36rem; padding: 2rem; border-radius: 1.2rem; background: #c5c0ed; transition: transform .35s cubic-bezier(.22,1,.36,1); }
 .eng-index-card--retrieval { background: linear-gradient(135deg,#202e85,#344bd0); color: #f2eee7; }
+.eng-index-card--scope { background: #ffab95; color: #29243b; }
 .eng-index-card:hover { transform: translateY(-6px); }.eng-index-card:focus-visible { outline: 3px solid #354bd4; outline-offset: 4px; }
 .eng-index-top { display: flex; justify-content: space-between; gap: 1rem; font-size: .7rem; letter-spacing: .08em; }.eng-index-top span:last-child { font-size: 1.4rem; }
 .eng-index-card h2 { margin: 0; font-family: 'Manrope',sans-serif; font-size: clamp(2.5rem,4.2vw,4.5rem); line-height: 1.02; letter-spacing: -.065em; }.eng-index-card h2 span { font-weight: 400; }.eng-index-card p { max-width: 30rem; margin: 1.5rem 0 2rem; font-size: 1rem; line-height: 1.6; }.eng-index-link { display: inline-block; padding-bottom: .4rem; border-bottom: 1px solid currentColor; font-size: .8rem; }

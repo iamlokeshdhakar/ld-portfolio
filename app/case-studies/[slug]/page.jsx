@@ -1,5 +1,5 @@
-import { notFound } from 'next/navigation';
-import { caseStudies, getCaseStudy } from '../../../lib/case-studies.mjs';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { caseStudies, getCaseStudy, retiredCaseStudySlugs } from '../../../lib/case-studies.mjs';
 import { ProjectVisual } from '../../portfolio-sections';
 import AxyCaseStudy from '../../axy-case-study';
 import { axyStories } from '../../../lib/axy-stories.mjs';
@@ -18,7 +18,10 @@ export async function generateMetadata({ params }) {
 export default async function CaseStudyPage({ params }) {
   const { slug } = await params;
   const study = getCaseStudy(slug);
-  if (!study) notFound();
+  if (!study) {
+    if (retiredCaseStudySlugs.includes(slug)) permanentRedirect('/#work');
+    notFound();
+  }
   const next = caseStudies[(caseStudies.indexOf(study) + 1) % caseStudies.length];
   const structuredData = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleSchema({ title: study.name, description: study.intro, path: `/case-studies/${study.slug}`, type: 'CreativeWork' })) }} />;
 

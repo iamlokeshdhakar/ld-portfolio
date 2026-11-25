@@ -24,10 +24,10 @@ export default function PortfolioSections() {
       <div className="section-top reveal"><span>02 / SELECTED WORK</span><span>A FEW THINGS I’VE BUILT</span></div>
       <div className="work-heading reveal"><h2>Good ideas.<br /><span>Made real.</span></h2><p>From complex systems to the<br/>details people interact with.</p></div>
       <div className="projects-grid">{projects.map((project) => <article className="project-card reveal" key={project.title}>
-        <a className={`project-visual project-visual--${project.color}`} href={`/case-studies/${project.slug}`} aria-label={`Read the case study: ${project.title}`}><ProjectVisual type={project.visual}/><span className="project-visual-arrow" aria-hidden="true">↗</span></a>
+        <a className={`project-visual project-visual--${project.color}`} href={project.caseStudy || project.href} {...(!project.caseStudy ? { target: '_blank', rel: 'noreferrer' } : {})} aria-label={project.caseStudy ? `Read the case study: ${project.title}` : `Visit ${project.title}`}><ProjectVisual type={project.visual}/><span className="project-visual-arrow" aria-hidden="true">↗</span></a>
         <div className="project-meta"><span>{project.number} / {project.kind}</span><span>{project.detail}</span></div>
         <h3>{project.title}</h3><p>{project.description}</p>
-        <div className="project-links"><a href={`/case-studies/${project.slug}`}>Read case study <span aria-hidden="true">↗</span></a>{project.href.startsWith('http') && <a href={project.href} target="_blank" rel="noreferrer">Visit project <span aria-hidden="true">↗</span></a>}{project.code && <a href={project.code} target="_blank" rel="noreferrer">View code <span aria-hidden="true">↗</span></a>}</div>
+        <div className="project-links">{project.caseStudy && <a href={project.caseStudy}>Read case study <span aria-hidden="true">↗</span></a>}{project.href.startsWith('http') && <a href={project.href} target="_blank" rel="noreferrer">Visit project <span aria-hidden="true">↗</span></a>}{project.code && <a href={project.code} target="_blank" rel="noreferrer">View code <span aria-hidden="true">↗</span></a>}</div>
       </article>)}</div>
       <div className="work-more reveal"><p>There’s always more to build.</p><a className="pill-link" href="https://github.com/iamlokeshdhakar" target="_blank" rel="noreferrer">Explore GitHub <span aria-hidden="true">↗</span></a></div>
     </section>
