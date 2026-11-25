@@ -1,9 +1,10 @@
 import { axyStories } from '../../lib/axy-stories.mjs';
+import { pageMetadata } from '../../lib/seo.mjs';
 
-export const metadata = {
-  title: 'Case studies — Lokesh Dhakar',
+export const metadata = pageMetadata({
+  title: 'Engineering Case Studies', path: '/case-studies',
   description: 'Engineering stories from Axy: trustworthy knowledge graph edits and scientific hybrid retrieval.',
-};
+});
 
 export default function CaseStudies() {
   return <main className="case-page">

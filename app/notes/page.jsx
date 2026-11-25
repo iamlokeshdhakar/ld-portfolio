@@ -1,9 +1,10 @@
 import NotesArchive from './notes-archive';
+import { pageMetadata } from '../../lib/seo.mjs';
 
-export const metadata = {
-  title: 'Field Notes | Lokesh Dhakar',
+export const metadata = pageMetadata({
+  title: 'Field Notes', path: '/notes',
   description: 'Thoughts on founding engineering, systems, and applied AI by Lokesh Dhakar.',
-};
+});
 
 export default function NotesPage() {
   return <main className="notes-page">

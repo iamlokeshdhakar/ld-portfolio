@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import data from '../../../lib/field-notes.json';
 import { newestFirst, getFieldNote, getCategory } from '../../../lib/field-notes.mjs';
+import { articleSchema, pageMetadata, serializeJsonLd } from '../../../lib/seo.mjs';
 
 const fieldNotes = newestFirst(data.posts);
 
@@ -9,7 +10,7 @@ export function generateStaticParams() { return fieldNotes.map(({ slug }) => ({ 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const note = getFieldNote(fieldNotes, slug);
-  return note ? { title: `${note.title} | Lokesh Dhakar`, description: note.description } : {};
+  return note ? pageMetadata({ title: note.title, description: note.description, path: `/notes/${note.slug}`, type: 'article' }) : {};
 }
 
 function NoteVisual({ type }) {
@@ -48,6 +49,7 @@ export default async function FieldNotePage({ params }) {
   const isRetrieval = note.category === 'retrieval' || note.category === 'qdrant';
   const isGraph = note.slug === 'review-before-a-knowledge-graph-write' || note.slug === 'guarding-submission-state-transitions';
   return <main className="note-page">
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleSchema({ title: note.title, description: note.description, path: `/notes/${note.slug}` })) }} />
     <header className="note-page-header"><a className="brand" href="/" aria-label="Lokesh Dhakar, home">ld<span>.</span></a><a href="/notes">← ALL FIELD NOTES</a><a href={isRetrieval ? '/case-studies/hybrid-retrieval' : isGraph ? '/case-studies/knowledge-graph' : '/#work'}>{isRetrieval || isGraph ? 'THE RELATED CASE STUDY' : 'SELECTED WORK'} ↗</a></header>
     <article><header className="note-page-hero"><div className="note-page-kicker"><span>FIELD NOTES / {note.number}</span><span>{note.topic} &nbsp; · &nbsp; {category.label}</span></div><h1>{note.title}</h1><p>{note.lead}</p><div className="note-page-byline"><span>WORDS BY LOKESH DHAKAR</span><span>NOTES FROM WORK &amp; LEARNING</span></div></header>
       <div className="note-page-body"><aside><span>{category.label}</span><strong>{category.title}</strong><p>Ideas from the work, shared as I learn.</p><a href="/notes#writing">Explore field notes ↗</a></aside><div className="note-page-content">{note.sections.map((section) => <section key={section.heading}><h2>{section.heading}</h2>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}{section.visual && <NoteVisual type={section.visual}/>}</section>)}<section className="note-sources"><h2>Continue the conversation</h2><ul><li><a href={note.sourceLinkedInUrl} target="_blank" rel="noreferrer">{note.sourceIsPlaceholder ? 'Find Lokesh on LinkedIn' : 'View the original LinkedIn post'} ↗</a></li></ul></section>{note.sources?.length > 0 && <section className="note-sources"><h2>Further reading</h2><ul>{note.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title} ↗</a></li>)}</ul></section>}</div></div>

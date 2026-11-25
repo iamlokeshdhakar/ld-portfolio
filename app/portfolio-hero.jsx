@@ -111,7 +111,7 @@ export default function PortfolioHero() {
             <div className="hero-opening">
               <p className="hero-eyebrow">A little curiosity. A lot of possibility.</p>
               <div className="name-wrap">
-                <h1 id="hero-title">Lokesh<span className="name-dot">.</span></h1>
+                <h1 id="hero-title"><span className="sr-only">Lokesh Dhakar — Founding and Full-stack Engineer</span><span aria-hidden="true">Lokesh<span className="name-dot">.</span></span></h1>
                 <p className="surname">Dhakar <span> / </span> Full-stack engineer</p>
               </div>
               <div className="hero-bottom">

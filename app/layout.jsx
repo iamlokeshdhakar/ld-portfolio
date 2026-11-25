@@ -1,10 +1,18 @@
 import './globals.css';
 import 'lenis/dist/lenis.css';
 import SmoothScroll from './smooth-scroll';
+import { siteDescription, siteName, siteUrl, socialImage } from '../lib/seo.mjs';
 
 export const metadata = {
-  title: 'Lokesh Dhakar — Founding Engineer · Full-stack & Applied AI',
-  description: 'Lokesh Dhakar is a product-focused founding and full-stack engineer building thoughtful products, distributed systems, and applied AI.',
+  metadataBase: new URL(siteUrl),
+  title: { default: 'Lokesh Dhakar — Founding Engineer · Full-stack & Applied AI', template: '%s | Lokesh Dhakar' },
+  description: siteDescription,
+  applicationName: siteName,
+  authors: [{ name: siteName, url: siteUrl }],
+  alternates: { canonical: `${siteUrl}/` },
+  openGraph: { type: 'website', url: `${siteUrl}/`, siteName, title: 'Lokesh Dhakar — Founding Engineer · Full-stack & Applied AI', description: siteDescription, images: [socialImage], locale: 'en_US' },
+  twitter: { card: 'summary_large_image', title: 'Lokesh Dhakar — Founding Engineer · Full-stack & Applied AI', description: siteDescription, images: [socialImage] },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }) {
