@@ -1,0 +1,787 @@
+{
+  "categories": [
+    {
+      "id": "retrieval",
+      "title": "Making sense of retrieval.",
+      "label": "RETRIEVAL & RAG",
+      "description": "From finding the right context to measuring what works: lessons from building RAG systems in production."
+    },
+    {
+      "id": "qdrant",
+      "title": "Inside vector search.",
+      "label": "THE QDRANT SERIES",
+      "description": "A closer look at collections, search, storage, and the decisions behind a production vector database."
+    },
+    {
+      "id": "distributed-systems",
+      "title": "Systems that work together.",
+      "label": "DISTRIBUTED SYSTEMS",
+      "description": "Notes on events, queues, ordering, and recovery in production systems."
+    },
+    {
+      "id": "engineering-practice",
+      "title": "Building with intention.",
+      "label": "ENGINEERING PRACTICE",
+      "description": "Lessons from the architecture, tooling, and team decisions behind building products."
+    }
+  ],
+  "posts": [
+    {
+      "slug": "production-rag-is-a-retrieval-problem",
+      "number": "01",
+      "topic": "PRODUCTION AI",
+      "title": "Production RAG is a retrieval problem.",
+      "description": "A useful answer starts long before the LLM. Lessons from building and evaluating a multi-stage retrieval pipeline.",
+      "lead": "The hardest part of a production RAG system is often getting the right information in front of the model in the first place.",
+      "sections": [
+        {
+          "heading": "Beyond the demo",
+          "paragraphs": [
+            "A simple RAG demo can retrieve a few documents, send them to an LLM, and produce a convincing answer. In production, that answer is only as useful as the context behind it. Missing the right information early in the pipeline can affect everything that follows.",
+            "Working on a multi-stage retrieval pipeline gave me a closer look at the choices behind that first step: embeddings, vector search configuration, hybrid retrieval, fusion, and reranking."
+          ]
+        },
+        {
+          "heading": "A pipeline, not a prompt",
+          "paragraphs": [
+            "We combined dense and sparse retrieval to find candidates using both meaning and exact terms. Reciprocal Rank Fusion brought their rankings together, and a cross-encoder reranked the candidates before the selected context reached the LLM.",
+            "Each stage has parameters and trade-offs. A more complex configuration is not automatically a better one; it needs to earn its place through measurement."
+          ],
+          "visual": "pipeline"
+        },
+        {
+          "heading": "Measure what changes",
+          "paragraphs": [
+            "Building the pipeline was only half the work. We evaluated different approaches against BEIR datasets using retrieval metrics, so we could compare configurations instead of relying on a few convincing examples.",
+            "The lesson I keep coming back to: AI systems need evaluation, not just implementation. The biggest improvement does not always come from changing the LLM; sometimes it comes from asking better questions about the system around it."
+          ]
+        }
+      ],
+      "category": "retrieval",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "why-dense-and-sparse-search-work-together",
+      "number": "02",
+      "topic": "RETRIEVAL",
+      "title": "Why dense and sparse search work together.",
+      "description": "Meaning and exact words are different signals. A strong retrieval system makes room for both.",
+      "lead": "I used to think of retrieval as searching a vector database. Working on a real pipeline showed me how much more there is to it.",
+      "sections": [
+        {
+          "heading": "Two ways to find relevance",
+          "paragraphs": [
+            "Dense retrieval looks for semantic similarity. A query like “how to make an API faster” can surface a useful result about reducing latency, even if the wording is different.",
+            "Sparse retrieval focuses on lexical signals: the actual terms in a query. That makes it useful when specific names, abbreviations, or technical words carry meaning that a semantic match might miss."
+          ],
+          "visual": "signals"
+        },
+        {
+          "heading": "Better together",
+          "paragraphs": [
+            "In our pipeline, dense and sparse retrieval run as complementary ways to find candidates. Reciprocal Rank Fusion combines their ranked results, and a reranker then takes a closer look at the candidates.",
+            "The goal is not to declare one search method the winner. It is to use different signals to improve the chance that the right context reaches the LLM."
+          ],
+          "visual": "pipeline"
+        }
+      ],
+      "category": "retrieval",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "combining-search-results-with-rrf",
+      "number": "03",
+      "topic": "RANKING",
+      "title": "How do you combine two different rankings?",
+      "description": "Reciprocal Rank Fusion brings dense and sparse results together without pretending their raw scores are comparable.",
+      "lead": "Dense and sparse retrieval can find different useful results. Their scores, however, do not necessarily speak the same language.",
+      "sections": [
+        {
+          "heading": "The score problem",
+          "paragraphs": [
+            "A dense similarity score might be between zero and one, while a BM25 score can be on a very different scale depending on the query and dataset. Adding the raw scores would give their magnitudes meaning they do not necessarily have.",
+            "Reciprocal Rank Fusion (RRF) takes a different approach: it combines where a document appears in each ranked list, rather than comparing the systems’ raw scores."
+          ],
+          "visual": "formula"
+        },
+        {
+          "heading": "A small example",
+          "paragraphs": [
+            "Suppose dense retrieval ranks A, B, C, while sparse retrieval ranks C, A, D. With k = 60, A scores 1/61 + 1/62 ≈ 0.0325; C scores 1/63 + 1/61 ≈ 0.0323.",
+            "Both surface strongly because they appear near the top of both lists. The constant k controls how much weight goes to the highest ranks. RRF is useful here because it combines complementary signals without calibrating their scores to the same scale."
+          ],
+          "visual": "ranking"
+        },
+        {
+          "heading": "The bigger lesson",
+          "paragraphs": [
+            "The interesting part is not that one retrieval method is always better. It is that different methods can contribute useful evidence—and the pipeline needs a thoughtful way to bring that evidence together."
+          ]
+        }
+      ],
+      "category": "retrieval",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "reranking-the-right-candidates",
+      "number": "04",
+      "topic": "RERANKING",
+      "title": "Finding candidates is only the first step.",
+      "description": "A cross-encoder takes a closer look at relevance, with a real cost in latency and compute.",
+      "lead": "Getting the top results from search does not necessarily mean the best results are at the top.",
+      "sections": [
+        {
+          "heading": "A closer look at relevance",
+          "paragraphs": [
+            "After dense and sparse retrieval and RRF, we have a set of candidates. The next question is which of them are actually most relevant to the query.",
+            "We use a cross-encoder to rerank them. Instead of independently embedding the query and result and comparing those representations, it evaluates each query–candidate pair together and gives it a relevance score."
+          ]
+        },
+        {
+          "heading": "Different stages, different jobs",
+          "paragraphs": [
+            "Retrieval helps find promising candidates. Reranking helps decide which of those candidates should come first. The distinction makes it easier to reason about what each stage contributes to the system."
+          ],
+          "visual": "pipeline"
+        },
+        {
+          "heading": "Every stage has a cost",
+          "paragraphs": [
+            "A cross-encoder adds compute and latency, so adding a stage is not a free improvement. The benefit needs to justify its cost in the context of the whole system.",
+            "That trade-off felt familiar: building AI systems involves the same kind of engineering judgment as any other backend system."
+          ]
+        }
+      ],
+      "category": "retrieval",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "measuring-retrieval-quality",
+      "number": "05",
+      "topic": "EVALUATION",
+      "title": "Did retrieval actually get better?",
+      "description": "BEIR datasets and retrieval metrics turn changes to an AI pipeline into something we can compare.",
+      "lead": "A few promising results can tell you where to look. They cannot tell you whether a retrieval pipeline is reliably improving.",
+      "sections": [
+        {
+          "heading": "From impressions to evidence",
+          "paragraphs": [
+            "After changing part of a RAG pipeline, it is tempting to inspect a few answers and decide the new configuration looks better. That is useful for exploration, but it is not enough for a production system.",
+            "We used BEIR datasets—including SciDocs, NFCorpus, SciFact, and DBPedia—to compare retrieval approaches across a broader set of queries."
+          ]
+        },
+        {
+          "heading": "What the metrics tell us",
+          "paragraphs": [
+            "Recall@k helps measure how much relevant material appears among the retrieved results. NDCG@10 considers the quality and position of results near the top. MRR focuses on how early the first relevant result appears.",
+            "Together, these metrics give us different views of retrieval quality. They make it possible to compare configurations and understand the effect of a change instead of guessing."
+          ],
+          "visual": "metrics"
+        },
+        {
+          "heading": "Keep the feedback loop open",
+          "paragraphs": [
+            "For me, RAG is not only about the answer an LLM produces. It is also about retrieval quality, measurement, and making decisions based on the results."
+          ]
+        }
+      ],
+      "category": "retrieval",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "the-systems-cost-of-rag",
+      "number": "06",
+      "topic": "SYSTEMS",
+      "title": "The systems cost behind a RAG pipeline.",
+      "description": "Embedding dimensions, precision, indexes, and candidate counts all shape the cost of retrieval at scale.",
+      "lead": "At millions of vectors, decisions that look small in a prototype become infrastructure decisions.",
+      "sections": [
+        {
+          "heading": "Start with the raw numbers",
+          "paragraphs": [
+            "One million vectors with 1,536 dimensions stored as FP32 need about 6.14 GB for the raw values alone. FP16 needs roughly half as much. Neither estimate includes indexes, payloads, replicas, or other overhead.",
+            "That arithmetic changed how I thought about our retrieval pipeline. The embedding model matters, but so do vector dimensions, precision, storage, and the number of candidates passed to reranking."
+          ],
+          "visual": "vector-size"
+        },
+        {
+          "heading": "There is no free setting",
+          "paragraphs": [
+            "Chunk size and overlap affect what is embedded. Top-k and HNSW parameters influence the candidates retrieved. Reranking more candidates can improve relevance, but adds compute and latency.",
+            "We explored Qdrant quantization and containerization while working with Voyage 4 embeddings and Voyage rerank 2.5. The right configuration depends on the dataset and constraints; we used BEIR benchmarks and retrieval metrics to compare changes."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: capacity planning",
+          "url": "https://qdrant.tech/documentation/capacity-planning/"
+        }
+      ],
+      "category": "retrieval",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "what-embedding-dimensions-mean",
+      "number": "07",
+      "topic": "EMBEDDINGS",
+      "title": "What does an embedding dimension mean?",
+      "description": "A mental model for vectors—and why more coordinates come with a practical cost.",
+      "lead": "An embedding is a point in a learned space. Its dimensions are coordinates, not a neat checklist of human concepts.",
+      "sections": [
+        {
+          "heading": "From coordinates to embeddings",
+          "paragraphs": [
+            "A point such as [5, 3] has two coordinates. Add another and you have a three-dimensional point. An embedding applies the same idea at a much larger scale: a 512-dimensional vector contains 512 values.",
+            "An embedding model transforms text into a learned representation. Similar ideas can end up near each other in that space, making measures such as cosine similarity useful for semantic search."
+          ]
+        },
+        {
+          "heading": "Meaning is distributed",
+          "paragraphs": [
+            "It is tempting to imagine one coordinate for color and another for size. In practice, semantic information is generally distributed across the vector, and the coordinates work together as a representation.",
+            "More dimensions also mean more data. At FP32, 512, 1,024, and 1,536 dimensions use approximately 2, 4, and 6 KiB per vector respectively, before index and other overhead. A larger vector is not automatically a better retrieval system; evaluate the model and configuration on the task."
+          ],
+          "visual": "dimensions"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: vector data types",
+          "url": "https://qdrant.tech/documentation/manage-data/vectors/"
+        }
+      ],
+      "category": "retrieval",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "from-keyword-search-to-vectors",
+      "number": "08",
+      "topic": "VECTOR SEARCH",
+      "title": "When exact words aren’t enough.",
+      "description": "Why a research search needed semantic similarity alongside lexical matching.",
+      "lead": "A researcher can ask for “AI for finding new medicines” while a relevant paper uses “machine learning” and “drug discovery.”",
+      "sections": [
+        {
+          "heading": "The vocabulary gap",
+          "paragraphs": [
+            "A substring query can work when the words match, but it may miss relevant papers when a user expresses the same idea differently. In research search, abbreviations, domain language, and varied phrasing make that gap especially visible.",
+            "An embedding model maps a query and a paper into vectors. Searching for nearby vectors can surface semantically related text even when their wording differs."
+          ],
+          "visual": "signals"
+        },
+        {
+          "heading": "Choosing the search tool",
+          "paragraphs": [
+            "Qdrant provides vector indexes and metadata filtering designed for similarity search. PostgreSQL can also support vector search through pgvector, and conventional full-text search remains valuable for exact terms.",
+            "The useful lesson was not to discard SQL or keyword matching. It was to choose and evaluate the right combination of signals for the search experience."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: search overview",
+          "url": "https://qdrant.tech/documentation/overview/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "qdrant-collections-and-vector-shape",
+      "number": "09",
+      "topic": "COLLECTIONS",
+      "title": "A collection starts with a contract.",
+      "description": "Vector size, distance metric, and the shape of a Qdrant point.",
+      "lead": "Before indexing a single paper, a collection needs a vector configuration that matches the embedding model.",
+      "sections": [
+        {
+          "heading": "Size and distance",
+          "paragraphs": [
+            "A dense vector field has a configured size and distance function. The vectors written to that field must match its dimensions. Cosine compares direction; dot product also reflects magnitude; Euclidean measures distance between points.",
+            "Which metric makes sense depends on the embedding model and its intended use. We used cosine with our Voyage embeddings and checked the model guidance rather than assuming one distance works for every dataset."
+          ]
+        },
+        {
+          "heading": "Plan model migrations",
+          "paragraphs": [
+            "We once changed embedding models without updating the collection configuration and had to rebuild and re-upload. That experience made vector schema part of the migration plan.",
+            "Current Qdrant versions also support adding named vectors to an eligible existing collection, then backfilling the new embeddings. A blue-green collection migration is another option. Either way, the new representation needs compatible data and evaluation."
+          ],
+          "visual": "point"
+        },
+        {
+          "heading": "What lives in a point",
+          "paragraphs": [
+            "A point combines an ID, one or more vectors, and optional payload: the metadata needed to display and filter results."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: collections",
+          "url": "https://qdrant.tech/documentation/manage-data/collections/"
+        },
+        {
+          "title": "Qdrant: embedding model migration",
+          "url": "https://qdrant.tech/documentation/tutorials-operations/embedding-model-migration/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "understanding-qdrant-segments",
+      "number": "10",
+      "topic": "STORAGE",
+      "title": "What happens inside a segment?",
+      "description": "How segment organization and background optimization affect ingestion, search, and disk use.",
+      "lead": "A collection is not simply one giant index. Qdrant organizes shard data into segments and optimizes them in the background.",
+      "sections": [
+        {
+          "heading": "A unit of storage and search",
+          "paragraphs": [
+            "Segments hold subsets of points, their payloads, vectors, and associated indexes. Qdrant can search across segments and combine results, while updates and background work continue.",
+            "New or recently updated data may be searchable before it has an optimized vector index. During large uploads, indexing and search can also compete for resources, so latency may change while the optimizer catches up."
+          ]
+        },
+        {
+          "heading": "Optimization is background work",
+          "paragraphs": [
+            "The optimizer can merge segments and build indexes according to configured thresholds. Deletes are initially marked; vacuum optimization can later rebuild qualifying segments without the deleted data.",
+            "That helped us understand why disk space or search speed might not immediately reflect a large batch or deletion. Segment count is one useful signal, but resource usage and optimizer status matter too."
+          ],
+          "visual": "segments"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: optimizer",
+          "url": "https://qdrant.tech/documentation/ops-optimization/optimizer/"
+        },
+        {
+          "title": "Qdrant: low-latency search",
+          "url": "https://qdrant.tech/documentation/search/low-latency-search/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "qdrant-memory-and-disk",
+      "number": "11",
+      "topic": "MEMORY",
+      "title": "Where do vectors live at runtime?",
+      "description": "RAM, memory-mapped files, and the trade-off between storage cost and search latency.",
+      "lead": "Storage settings change more than where a file lives: they shape what happens when a query needs data that is not in memory.",
+      "sections": [
+        {
+          "heading": "A working set, not three isolated boxes",
+          "paragraphs": [
+            "Memory-mapped storage keeps vectors in files on disk and lets the operating system cache accessed pages in RAM. A cache hit can be fast; a miss requires disk I/O. On-disk does not mean “never cached.”",
+            "For our large paper collection, we used memory-mapped vector storage while keeping the index available in memory. It let us work with a collection larger than available RAM, with latency depending on the working set and disk performance."
+          ]
+        },
+        {
+          "heading": "Tune by component",
+          "paragraphs": [
+            "Vectors, the HNSW graph, payloads, and quantized vectors have different access patterns and can have separate placement settings. Newer Qdrant releases express placement through memory tiers; older versions use settings such as on_disk.",
+            "Benchmark with representative queries and warm and cold caches. Moving more data to disk can reduce RAM requirements, but may increase I/O and tail latency."
+          ],
+          "visual": "memory"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: memory tiers",
+          "url": "https://qdrant.tech/documentation/ops-configuration/memory-tiers/"
+        },
+        {
+          "title": "Qdrant: capacity planning",
+          "url": "https://qdrant.tech/documentation/capacity-planning/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "hnsw-search-and-tradeoffs",
+      "number": "12",
+      "topic": "INDEXING",
+      "title": "How HNSW searches without checking everything.",
+      "description": "A graph-based approach to approximate nearest neighbors, and the parameters worth measuring.",
+      "lead": "A full scan compares a query with every vector. HNSW uses a layered graph to find good candidates without normally doing all that work.",
+      "sections": [
+        {
+          "heading": "Highways and local streets",
+          "paragraphs": [
+            "Hierarchical Navigable Small World builds a graph of nearby vectors across layers. A search starts in a sparse upper layer, navigates toward promising neighbors, and descends to denser layers for a more detailed search.",
+            "It is approximate: the speedup comes with a possibility of missing the exact nearest neighbors. Depending on the query and collection, Qdrant can also choose a full scan rather than HNSW."
+          ],
+          "visual": "hnsw"
+        },
+        {
+          "heading": "Build-time and query-time choices",
+          "paragraphs": [
+            "The m parameter influences graph connectivity; ef_construct controls the candidate search during construction. Larger values can improve search quality but increase index size or build cost. Changing graph settings requires rebuilding the affected index.",
+            "At query time, hnsw_ef controls the search candidate list and can be tuned without rebuilding. We started with m = 16 and ef_construct = 100, and treated changes as experiments to benchmark against our data."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: indexing",
+          "url": "https://qdrant.tech/documentation/manage-data/indexing/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "payloads-and-filtered-search",
+      "number": "13",
+      "topic": "FILTERING",
+      "title": "The useful data around a vector.",
+      "description": "Payloads make results useful; indexes help combine similarity with the constraints users care about.",
+      "lead": "Finding a similar paper is only part of the job. A result also needs enough context to be useful—and it must satisfy the user’s filters.",
+      "sections": [
+        {
+          "heading": "Attach context to the point",
+          "paragraphs": [
+            "Qdrant payloads hold fields such as title, author, year, category, and access status. A search can combine semantic similarity with constraints, for example open-access papers published from 2020 onward.",
+            "Payload indexes help evaluate frequently used filters and help the query planner estimate how selective a condition is. They consume resources, so we choose fields based on real query patterns."
+          ],
+          "visual": "point"
+        },
+        {
+          "heading": "Keep responses intentional",
+          "paragraphs": [
+            "In our research search, indexing fields such as year and access status made filtered searches faster. We also reviewed which payload fields the search response needed.",
+            "Full abstracts were needed on a paper’s detail page but not in every result, so we removed them from the search payload. That reduced response size while keeping the information available where it mattered."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: filtering and payload indexes",
+          "url": "https://qdrant.tech/documentation/search-design/vector-search-filtering/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "shards-replicas-and-segments",
+      "number": "14",
+      "topic": "DISTRIBUTED SYSTEMS",
+      "title": "Shards, replicas, and what I’m still learning.",
+      "description": "A working mental model for distributing and copying collection data.",
+      "lead": "I have been studying how Qdrant distributes data. Our current setup is one instance, so this is my understanding rather than a multi-node deployment I have operated.",
+      "sections": [
+        {
+          "heading": "Split versus copy",
+          "paragraphs": [
+            "A shard partitions a collection’s points. In a multi-node deployment, shards can spread data and work across nodes; a collection-level search can fan out and combine results.",
+            "Replicas are copies of shards. They can improve availability and support read traffic, but require extra storage and appropriate cluster configuration. Segments organize data within a shard."
+          ],
+          "visual": "shards"
+        },
+        {
+          "heading": "More is not always faster",
+          "paragraphs": [
+            "If ten million points were evenly distributed across four shards, each would hold roughly 2.5 million. Real distribution and query patterns may vary, and additional shards introduce overhead.",
+            "The next step for me is understanding these trade-offs through hands-on cluster work. Replication and consistency settings deserve the same care as the shard count."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: horizontal scaling",
+          "url": "https://qdrant.tech/documentation/scaling/horizontal-scaling/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "write-ahead-log-and-recovery",
+      "number": "15",
+      "topic": "RELIABILITY",
+      "title": "Why the write-ahead log matters.",
+      "description": "A look at Qdrant’s write path and the operational space needed around it.",
+      "lead": "A durable write path is more than an API response: it includes the log, update processing, storage, and recovery plan.",
+      "sections": [
+        {
+          "heading": "Log before segment updates",
+          "paragraphs": [
+            "Qdrant writes incoming operations to a shard’s write-ahead log before applying them to segments. The log supports recovery of operations that have not yet been fully applied after an interruption.",
+            "Acknowledgement and visibility depend on request options and deployment configuration. A timeout or broken connection can leave the outcome uncertain, so clients should use appropriate retry and idempotency strategies rather than assuming failure or promising unconditional durability."
+          ],
+          "visual": "wal"
+        },
+        {
+          "heading": "Make room for the work",
+          "paragraphs": [
+            "During an initial setup, we sized disk for vectors and payloads but did not leave enough room for a large re-upload. WAL and other write activity consumed the remaining capacity, and we had to resize the disk.",
+            "Now I think about headroom for logs, indexes, optimizer temporary files, and growth—not just the final vector data. The right margin depends on workload, retention, and recovery needs."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: write and indexing stages",
+          "url": "https://qdrant.tech/documentation/search/low-latency-search/"
+        },
+        {
+          "title": "Qdrant: consistency guarantees",
+          "url": "https://qdrant.tech/documentation/scaling/consistency-guarantees/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "quantization-and-recall",
+      "number": "16",
+      "topic": "QUANTIZATION",
+      "title": "Smaller vectors, measurable trade-offs.",
+      "description": "Scalar, product, binary, and TurboQuant compress vectors in different ways.",
+      "lead": "Quantization can reduce the memory used for vector search, but the right choice depends on recall, latency, and the embedding distribution.",
+      "sections": [
+        {
+          "heading": "A compression spectrum",
+          "paragraphs": [
+            "Scalar quantization maps FP32 values to 8-bit values, reducing the size of that representation to roughly one quarter. Product quantization compresses groups of dimensions; binary approaches use very few bits per dimension, with accuracy depending on the data and model.",
+            "Qdrant 1.18 introduced TurboQuant, which applies a rotation before compression. Its published benchmarks show competitive recall at different bit depths, but results vary by dataset and embedding model."
+          ],
+          "visual": "quantization"
+        },
+        {
+          "heading": "Measure the whole system",
+          "paragraphs": [
+            "Oversampling and rescoring can recover recall by evaluating more candidates and, when available, comparing original vectors. They also have a cost: rescoring disk-backed originals can add I/O and latency.",
+            "A compressed copy is not necessarily the only copy on disk; storage configuration matters. Compare recall, latency, memory, and total disk usage on your own workload before choosing a method."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: quantization",
+          "url": "https://qdrant.tech/documentation/manage-data/quantization/"
+        },
+        {
+          "title": "Qdrant 1.18: TurboQuant",
+          "url": "https://qdrant.tech/blog/qdrant-1.18.x/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "inside-a-qdrant-search",
+      "number": "17",
+      "topic": "SEARCH SYSTEMS",
+      "title": "From a query to a useful result.",
+      "description": "Putting embeddings, filtering, indexes, and candidate scoring together.",
+      "lead": "The path from a search query to a result is a set of decisions—not one fixed sequence for every request.",
+      "sections": [
+        {
+          "heading": "Follow the request",
+          "paragraphs": [
+            "An application can turn the user’s text into a vector using an embedding model, then send that vector and any payload filters to Qdrant. The query planner chooses a search strategy using factors such as segment state, available indexes, and filter selectivity.",
+            "For indexed dense search, the path may involve a filter-aware HNSW traversal. For small or highly selective sets, a scan may be preferable. Results from relevant segments and shards are combined before the response is returned."
+          ],
+          "visual": "search-flow"
+        },
+        {
+          "heading": "Optimize where the time goes",
+          "paragraphs": [
+            "When quantization is enabled, approximate scoring and optional rescoring introduce further trade-offs. Actual execution depends on the configuration; not every search uses quantization or rescoring.",
+            "In our work, slow searches could point to different causes: indexing catching up after ingestion, missing payload indexes, or disk reads under memory pressure. Understanding the path made it easier to investigate the right part of the system."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "title": "Qdrant: filtered search planning",
+          "url": "https://qdrant.tech/documentation/search-design/vector-search-filtering/"
+        },
+        {
+          "title": "Qdrant: indexing",
+          "url": "https://qdrant.tech/documentation/manage-data/indexing/"
+        }
+      ],
+      "category": "qdrant",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "why-we-chose-event-driven-architecture",
+      "number": "18",
+      "topic": "EVENT-DRIVEN SYSTEMS",
+      "title": "One graph change, many consumers.",
+      "description": "Why we use events to keep search, vectors, and documents in sync with a changing knowledge graph.",
+      "lead": "When one change matters to several systems, a chain of direct calls can make every consumer part of the same failure path.",
+      "sections": [
+        {"heading": "The coordination problem", "paragraphs": ["When a node, edge, or paper changes in our knowledge graph, search needs to index it, the vector system may need to embed it, and the document store needs an update. Making those calls directly couples the original operation to each downstream service.", "As more consumers arrive, that approach also means revisiting the same application code each time. A slow or unavailable dependency can complicate the whole workflow."]},
+        {"heading": "Publish once, process independently", "paragraphs": ["Our approach publishes an event to SNS, which fans it out to an SQS queue for each consumer. Lambda workers process their own queues for search, vector, and document updates. Each consumer can retry and scale independently.", "Decoupling gives us resilience and room to add consumers, but it introduces eventual consistency, ordering, and harder debugging across asynchronous boundaries. For this system, those trade-offs were worth making."], "visual": "event-fanout"}
+      ],
+      "category": "distributed-systems",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "why-sns-sqs-and-lambda-together",
+      "number": "19",
+      "topic": "AWS ARCHITECTURE",
+      "title": "Why put a queue between SNS and Lambda?",
+      "description": "Fan-out, independent buffering, and failure handling for graph updates.",
+      "lead": "SNS can invoke Lambda directly. We added SQS because each consumer needed its own buffer and processing pace.",
+      "sections": [
+        {"heading": "A queue for each consumer", "paragraphs": ["A graph change is published to SNS and delivered to separate SQS queues for search, vector, and document consumers. Lambda polls each queue and handles its messages. A backlog in one queue does not have to stop the others.", "SQS gives each consumer a configurable queue, visibility timeout, and redrive policy. Failed messages can be retried and, after the configured receive threshold, moved to a dead-letter queue for investigation."]},
+        {"heading": "The hard part is the behavior around it", "paragraphs": ["SNS-to-Lambda delivery is not simply fire-and-forget: AWS provides retry and failure-handling mechanisms for asynchronous invocation. SQS adds an explicit per-consumer buffer and queue controls that fit our workflow.", "The more difficult problem was handling events for the same knowledge graph when they arrive or execute out of order. That needs careful concurrency, retry, and ordering design beyond the fan-out diagram."]}
+      ],
+      "sources": [{"title": "AWS: Lambda asynchronous retry behavior", "url": "https://docs.aws.amazon.com/lambda/latest/dg/invocation-retries.html"}, {"title": "AWS: Lambda and SQS error handling", "url": "https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html"}],
+      "category": "distributed-systems",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "ordering-graph-events-through-failures",
+      "number": "20",
+      "topic": "ORDERING & RETRIES",
+      "title": "Ordering is more than the order a queue returns.",
+      "description": "What concurrent Lambda invocations, retries, and duplicate messages mean for graph synchronization.",
+      "lead": "Processing a batch sequentially is not the same as guaranteeing the order of every event for a knowledge graph.",
+      "sections": [
+        {"heading": "The batch boundary", "paragraphs": ["Our graph-sync consumers use SQS Standard queues, which can deliver duplicate or out-of-order messages. We group records by knowledge graph ID and process each group sequentially inside a batch, while different groups can run concurrently.", "That grouping alone does not coordinate concurrent Lambda invocations or repair out-of-order delivery. We also use per-graph coordination and make updates safe against retries and duplicate deliveries; the application must account for stale or out-of-order changes."]},
+        {"heading": "Failure changes what is safe", "paragraphs": ["If one event fails, we stop processing the remaining events in that graph group and retry the failed and unprocessed work safely. Otherwise a later update could succeed before an earlier one is retried.", "For merge operations that require strict per-graph ordering, we use SQS FIFO. Message groups preserve order within a group while allowing different graphs to make progress concurrently. Coordination and idempotency are important, but neither turns a Standard queue into a FIFO queue."]}
+      ],
+      "sources": [{"title": "AWS: SQS Standard queues", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html"}, {"title": "AWS: FIFO message groups", "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-understanding-logic.html"}],
+      "category": "distributed-systems",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "a-dead-letter-queue-needs-a-response",
+      "number": "21",
+      "topic": "RELIABILITY",
+      "title": "A dead-letter queue is a signal, not a solution.",
+      "description": "A failed message matters only if someone can see it, diagnose it, and choose a safe recovery.",
+      "lead": "A dead-letter queue catches work the system could not process. It does not resolve the failure by itself.",
+      "sections": [
+        {"heading": "Different failures need different responses", "paragraphs": ["A malformed message points toward an upstream validation or contract problem. A downstream outage that lasts longer than the retry window needs a different response: investigate the failure and plan a safe replay once the dependency has recovered.", "Those situations should not be treated as identical. Before acknowledging or discarding a malformed message, preserve enough diagnostic information and investigate the source."]},
+        {"heading": "Make the signal actionable", "paragraphs": ["A queue nobody monitors can become a quiet pile of unresolved work. Configure an alert, give someone an ownership path, and make replay safe against duplicates and ordering issues.", "For me, a DLQ is not the finish line. It is the point where the system tells us that automatic recovery was not enough."]}
+      ],
+      "category": "distributed-systems",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "why-we-use-three-layer-architecture",
+      "number": "22",
+      "topic": "BACKEND ARCHITECTURE",
+      "title": "The practical value of predictable layers.",
+      "description": "What controller, service, and repository boundaries bought our growing team—and when they felt heavy.",
+      "lead": "I once thought a strict controller–service–repository structure was too much for a small team. Growth changed my mind.",
+      "sections": [
+        {"heading": "Know where to look", "paragraphs": ["As we added services and developers, a consistent structure made production issues easier to navigate: request validation and response handling at the controller, business rules in the service, and data access in the repository.", "The benefit is predictability. A familiar boundary gives the next engineer a starting point instead of making every service a new puzzle."], "visual": "backend-layers"},
+        {"heading": "Structure has a cost", "paragraphs": ["The same layers can slow down a short-lived experiment. We try to be honest about the phase: keep prototypes lightweight, then add the structure a production feature needs.", "The discipline is also social. If shortcuts repeatedly cross boundaries and reviews do not catch them, the pattern stops being a reliable guide. Consistency depends on the team, not just the folder names."]}
+      ],
+      "category": "engineering-practice",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "review-before-a-knowledge-graph-write",
+      "number": "23",
+      "topic": "KNOWLEDGE GRAPHS",
+      "title": "Why every graph change goes through review.",
+      "description": "A submission workflow protects the canonical graph while giving researchers room to propose changes.",
+      "lead": "A bad write in a knowledge graph can affect more than one record. We needed a way to review changes before they became canonical.",
+      "sections": [
+        {"heading": "Changes begin as proposals", "paragraphs": ["Instead of allowing changes to go straight into the canonical graph, we built a submission pipeline. An author prepares a Draft, opens it for review, and an approved submission can be Merged.", "Before merge, reviewers and validation can inspect the proposed changes and surface conflicts. The merge itself is atomic: the submission is applied as a unit rather than leaving a partial graph update."]},
+        {"heading": "Integrity is a workflow", "paragraphs": ["The human review step is valuable because scientific graph data needs to be trusted, and relationships can amplify the effect of a mistake. Keeping the live graph untouched during review gives us a safer place to make decisions.", "The workflow adds implementation and maintenance costs compared with direct writes. We accepted that complexity because avoiding unreviewed changes was central to the product."]}
+      ],
+      "category": "engineering-practice",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "guarding-submission-state-transitions",
+      "number": "24",
+      "topic": "STATE MACHINES",
+      "title": "Make invalid state transitions impossible.",
+      "description": "How explicit transition guards protect the submission lifecycle from silent invalid writes.",
+      "lead": "A state machine becomes practical when a bad state transition would otherwise succeed silently.",
+      "sections": [
+        {"heading": "A small set of rules", "paragraphs": ["Our submission lifecycle has three states: Draft, Open, and Merged. Draft can move to Open; Open can return to Draft or move to Merged. A Draft cannot skip review and become Merged directly.", "Without an explicit guard, a faulty client or concurrent request might attempt a transition the workflow does not allow. A successful write could leave the submission in a state the product never intended."], "visual": "submission-states"},
+        {"heading": "Enforce the boundary", "paragraphs": ["We check whether the current and requested states form a valid transition before applying a change. Invalid transitions return a 409 with a clear explanation, rather than quietly changing the record.", "Keeping the rules in one place makes the lifecycle easier to reason about across callers. Correctness under concurrent updates also depends on how the state change is guarded at the storage boundary."]}
+      ],
+      "category": "engineering-practice",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "lessons-from-a-pnpm-turbo-monorepo",
+      "number": "25",
+      "topic": "DEVELOPER TOOLING",
+      "title": "What a monorepo made easier—and harder.",
+      "description": "Lessons from pnpm workspaces, shared packages, and Turbo’s build cache.",
+      "lead": "One repository made it easier to share code and add services. Getting the build system right took more work than I expected.",
+      "sections": [
+        {"heading": "Shared structure, shared responsibility", "paragraphs": ["I first explored a monorepo while building Scope Seeker in college. At my current workplace, we chose pnpm and Turbo to keep services and shared packages together.", "pnpm catalogs help keep common dependency versions aligned. The trade-off is that a breaking change in a shared package can affect many consumers at once; I learned that during a real incident."]},
+        {"heading": "The cache only knows what you describe", "paragraphs": ["Turbo can avoid repeating work, but task dependencies and inputs need to be described correctly. An incomplete configuration risks stale results; an overly broad one can cause unnecessary rebuilds.", "The payoff became clear when adding services: the structure and build pipeline were already familiar. I would choose the setup again—and spend more time on the task graph earlier."]}
+      ],
+      "category": "engineering-practice",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "centralizing-secrets-across-services",
+      "number": "26",
+      "topic": "SECRETS MANAGEMENT",
+      "title": "Why I changed my mind about .env files.",
+      "description": "How a shared secrets manager changed our team’s workflow across services and environments.",
+      "lead": "At first, I preferred the simplicity of local environment files. Managing several services with a growing team changed that view.",
+      "sections": [
+        {"heading": "The cost of configuration drift", "paragraphs": ["Our DevOps team chose Infisical from the start. I initially wondered why we needed another tool when .env files were familiar and easy to override locally.", "Over time I saw the coordination problems a central system can reduce: an undocumented new variable, a stale local value, or a secret accidentally committed. New teammates can get access through the shared workflow rather than receiving files from one another."]},
+        {"heading": "A shared source of truth", "paragraphs": ["Our services load their environment configuration through Infisical, and a command wraps the local development workflow. It gives the team a consistent place to manage secrets across environments.", "Updates still depend on how and when each service loads its configuration; a central store does not automatically refresh a running process. For a side project, an .env file may still be perfectly reasonable. Our team’s needs had changed."]}
+      ],
+      "category": "engineering-practice",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    },
+    {
+      "slug": "strict-typescript-as-a-team-contract",
+      "number": "27",
+      "topic": "TYPESCRIPT & AI",
+      "title": "Strict TypeScript is a contract for the whole team.",
+      "description": "Why compiler constraints matter when both engineers and AI tools contribute code.",
+      "lead": "Our TypeScript configuration gives humans and AI tools the same set of constraints to work within.",
+      "sections": [
+        {"heading": "Make assumptions visible", "paragraphs": ["Alongside strict mode, we use options including noUncheckedIndexedAccess, noImplicitReturns, and noFallthroughCasesInSwitch. These make potentially absent indexed values and certain control-flow mistakes harder to overlook.", "At first, stricter checks can sound like friction. In practice, they push us to be explicit about cases the code needs to handle."]},
+        {"heading": "The compiler is part of the feedback loop", "paragraphs": ["Much of our code is written with Claude Code. The compiler, IDE, and review process all work against the same configuration, and I have seen the tooling help produce code that satisfies those constraints.", "Passing the type checker is not proof that generated code is correct or that every edge case is handled. Review and tests still matter. The benefit is a clearer contract and fewer unchecked assumptions for everyone working on the system."]}
+      ],
+      "category": "engineering-practice",
+      "sourceLinkedInUrl": "https://www.linkedin.com/in/iamlokeshdhakar/",
+      "sourceIsPlaceholder": true
+    }
+  ]
+}

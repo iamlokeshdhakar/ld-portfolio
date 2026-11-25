@@ -1,5 +1,6 @@
 import { projects, experience, skills } from './content';
 import GitHubActivity from './github-activity';
+import FieldNotesPreview from './field-notes-preview';
 
 export function ProjectVisual({ type }) {
   if (type === 'graph') return <div className="visual-graph" aria-hidden="true"><span className="graph-line graph-line--one"/><span className="graph-line graph-line--two"/><span className="graph-line graph-line--three"/><span className="graph-node graph-node--one">RESEARCH</span><span className="graph-node graph-node--two">KNOWLEDGE</span><span className="graph-node graph-node--three">DISCOVERY</span><span className="graph-center">✳</span></div>;
@@ -50,10 +51,11 @@ export default function PortfolioSections() {
       <div className="education-card reveal"><div><p className="education-label">EDUCATION / 2020 — 2024</p><h2>Made to<br/><span>keep learning.</span></h2></div><div className="education-detail"><p>B.TECH IN COMPUTER SCIENCE</p><h3>RGPV University<span>.</span></h3><p>Sagar Institute of Research Technology and Science, Bhopal</p><div className="education-grade">CGPA <strong>8.4 / 10</strong></div></div><div className="education-spark" aria-hidden="true">✳</div></div>
     </section>
 
+    <FieldNotesPreview />
     <GitHubActivity />
 
     <footer className="contact-section section-pad" id="contact" data-header-theme="light">
-      <div className="section-top reveal"><span>07 / WHAT’S NEXT?</span><span>GOOD THINGS START WITH A HELLO</span></div>
+      <div className="section-top reveal"><span>08 / WHAT’S NEXT?</span><span>GOOD THINGS START WITH A HELLO</span></div>
       <div className="contact-content reveal"><p>HAVE AN IDEA IN MIND?</p><h2>Let’s make<br/><span>something</span><br/>matter<span className="contact-dot">.</span></h2><a className="contact-circle" href="mailto:lokeshdhakar1404@gmail.com" aria-label="Email Lokesh">↗</a></div>
       <div className="contact-bottom reveal"><div><span>DROP ME A LINE</span><a className="contact-email" href="mailto:lokeshdhakar1404@gmail.com">lokeshdhakar1404@gmail.com</a></div><div className="social-links"><a href="https://github.com/iamlokeshdhakar" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://linkedin.com/in/iamlokeshdhakar" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="/resume.pdf" target="_blank" rel="noreferrer">Resume ↗</a></div></div>
       <div className="footer-line"><a href="#top" className="footer-brand">ld<span>.</span></a><span>LOKESH DHAKAR / FULL-STACK ENGINEER</span><a href="#top">BACK TO TOP ↑</a></div>

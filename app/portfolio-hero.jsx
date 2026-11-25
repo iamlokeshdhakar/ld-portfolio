@@ -9,6 +9,7 @@ const links = [
   { label: 'Work', href: '#work' },
   { label: 'Experience', href: '#experience' },
   { label: 'Skills', href: '#skills' },
+  { label: 'Notes', href: '#notes' },
   { label: 'GitHub', href: '#github' },
 ];
 

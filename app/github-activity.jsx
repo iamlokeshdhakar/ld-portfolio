@@ -64,7 +64,7 @@ export default function GitHubActivity() {
   }, []);
   const { data, status } = state;
   return <section className="github-section section-pad" id="github" data-header-theme="light">
-    <div className="section-top reveal"><span>06 / IN THE OPEN</span><span>A LITTLE OF THE WORK BEHIND THE WORK</span></div>
+    <div className="section-top reveal"><span>07 / IN THE OPEN</span><span>A LITTLE OF THE WORK BEHIND THE WORK</span></div>
     <div className="github-heading reveal"><div><p>GITHUB / @IAMLOKESHDHAKAR</p><h2>Always<br/><span>in progress.</span></h2></div><p>Building, learning, and sharing along the way. Here’s a glimpse of the work visible on GitHub.</p></div>
     <div className="github-dashboard reveal">
       <div className="github-dashboard-top"><div><span className="github-mark" aria-hidden="true">✳</span><div><p>GITHUB ACTIVITY</p><span>@iamlokeshdhakar</span></div></div><a href={PROFILE_URL} target="_blank" rel="noreferrer">View profile <span aria-hidden="true">↗</span></a></div>
