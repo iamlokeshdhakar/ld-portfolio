@@ -1,6 +1,7 @@
 import './globals.css';
 import 'lenis/dist/lenis.css';
 import SmoothScroll from './smooth-scroll';
+import AnalyticsSetup from './analytics';
 import { siteDescription, siteName, siteUrl, socialImage } from '../lib/seo.mjs';
 
 export const metadata = {
@@ -16,5 +17,13 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  return <html lang="en"><body><SmoothScroll />{children}</body></html>;
+  return (
+    <html lang="en">
+      <body>
+        <AnalyticsSetup />
+        <SmoothScroll />
+        {children}
+      </body>
+    </html>
+  );
 }
