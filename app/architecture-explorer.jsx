@@ -12,7 +12,7 @@ export default function ArchitectureExplorer({ stages, variant, diagramLabel }) 
       {stages.map((stage, index) => <button key={stage.short} type="button" className={`architecture-stage ${index === activeIndex ? 'is-active' : ''}`} aria-pressed={index === activeIndex} onClick={() => setActiveIndex(index)}>
         <span className="architecture-stage-number">{stage.short}</span>
         <span className="architecture-stage-title">{stage.title}</span>
-        {variant === 'retrieval' && index === 1 && <span className="architecture-branches" aria-hidden="true"><span>DENSE</span><span>SPARSE</span></span>}
+        {stage.branches && <span className="architecture-branches" aria-hidden="true">{stage.branches.map((branch) => <span key={branch}>{branch}</span>)}</span>}
         <span className="architecture-stage-indicator" aria-hidden="true">↗</span>
       </button>)}
     </div>

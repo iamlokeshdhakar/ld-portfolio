@@ -6,8 +6,8 @@ export const projects = [
     href: '/case-studies/knowledge-graph', caseStudy: '/case-studies/knowledge-graph', action: 'Read the case study',
   },
   {
-    slug: 'hybrid-retrieval', number: '02', kind: 'APPLIED AI · AXY', title: 'Search built for discovery.',
-    description: 'A multi-stage retrieval pipeline bringing dense and sparse search, reranking, and scientific evaluation together.',
+    slug: 'hybrid-retrieval', number: '02', kind: 'APPLIED AI · AXY', title: 'RAG search built for discovery.',
+    description: 'A hybrid RAG retrieval pipeline and benchmark harness built to expose where scientific search falls short.',
     detail: 'HYBRID SEARCH / APPLIED AI', color: 'blue', visual: 'search',
     href: '/case-studies/hybrid-retrieval', caseStudy: '/case-studies/hybrid-retrieval', action: 'Read the case study',
   },

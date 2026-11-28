@@ -4,7 +4,7 @@ import { pageMetadata } from '../../lib/seo.mjs';
 
 export const metadata = pageMetadata({
   title: 'Engineering Case Studies', path: '/case-studies',
-  description: 'Explore engineering case studies on a scientific knowledge graph, hybrid retrieval, and the Scope Seeker job search platform.',
+  description: 'Explore engineering case studies on a scientific knowledge graph, hybrid RAG retrieval, and the Scope Seeker job search platform.',
 });
 
 export default function CaseStudies() {

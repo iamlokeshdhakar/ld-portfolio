@@ -14,6 +14,7 @@ export default function AxyCaseStudy({ story, next }) {
     <section className="eng-context eng-section" id="challenge">
       <div className="eng-section-label eng-reveal"><span>01 / THE CONTEXT</span><span>{story.tensionLabel}</span></div>
       <div className="eng-context-grid eng-reveal"><div><p className="eng-overline">THE TENSION</p><h2>{story.tensionTitle}</h2></div><div className="eng-context-copy"><p className="eng-lead">{story.tensionLead}</p><p>{story.tensionBody}</p></div></div>
+      {story.benchmark && <div className="eng-query-example eng-reveal"><div><span>THE QUERY / A CLOSER LOOK</span><strong>“sponge”</strong><p>One query exposed a gap between matching a word and understanding a scientific group.</p></div><div><span>RETURNED FIRST</span><strong>Porifera</strong><p>The correct group, with a lead of less than 0.01 over the second result.</p></div><div><span>THE REST OF THE TOP 10</span><strong>8 / 10</strong><p>Letter-matching names, including Spongocoelia, Pterospongus, and Heterospongus.</p></div></div>}
       <div className="eng-facts eng-reveal"><div><span>PROJECT</span><p>{story.focus}</p></div><div><span>MY ROLE</span><p>{story.role}</p></div><div><span>DISCIPLINES</span><p>{story.discipline}</p></div></div>
     </section>
 
@@ -34,8 +35,17 @@ export default function AxyCaseStudy({ story, next }) {
       <div className="eng-decision-grid">{story.decisions.map((decision) => <article className="eng-decision eng-reveal" key={decision.label}><p>{decision.label}</p><h3>{decision.title}</h3><p>{decision.body}</p></article>)}</div>
     </section>
 
+    {story.benchmark && <section className="eng-benchmark eng-section" id="evaluation">
+      <div className="eng-section-label eng-reveal"><span>05 / THE EVALUATION</span><span>MEASURE BEFORE TRUSTING</span></div>
+      <div className="eng-benchmark-heading eng-reveal"><h2>{story.benchmark.heading}</h2><p>{story.benchmark.intro}</p></div>
+      <div className="eng-benchmark-grid">{story.benchmark.results.map((result) => <article className="eng-benchmark-result eng-reveal" key={result.dataset}><p>{result.dataset}</p><h3>{result.value}</h3><span>{result.metric}</span><p>{result.detail}</p></article>)}</div>
+      <div className="eng-bugs-heading eng-reveal"><div><p className="eng-overline">WHAT THE BENCHMARK CAUGHT</p><h2>Two assumptions.<br/><span>Worth revisiting.</span></h2></div><p>Building the evaluation took longer than the initial pipeline, and it exposed two concrete issues.</p></div>
+      <div className="eng-bugs-grid">{story.benchmark.bugs.map((bug) => <article className="eng-bug eng-reveal" key={bug.label}><p>{bug.label}</p><h3>{bug.title}</h3><p>{bug.body}</p></article>)}</div>
+      <div className="eng-model-candidate eng-reveal"><div><span>MODEL COMPARISON / NOT YET SHIPPED</span><h2>{story.benchmark.modelTitle}</h2></div><div><p>{story.benchmark.modelBody}</p><p>{story.benchmark.modelFoot}</p></div></div>
+    </section>}
+
     <section className="eng-outcome eng-section">
-      <div className="eng-section-label eng-reveal"><span>05 / THE OUTCOME</span><span>{story.outcomeLabel}</span></div>
+      <div className="eng-section-label eng-reveal"><span>{story.benchmark ? '06' : '05'} / THE OUTCOME</span><span>{story.outcomeLabel}</span></div>
       <div className="eng-outcome-heading eng-reveal"><h2>{story.outcomeTitle}<br/><span>{story.outcomeAccent}</span></h2><p>{story.outcomeText}</p></div>
       <div className="eng-evidence eng-reveal">{story.evidence.map((item) => <div key={item.value}><strong>{item.value}</strong><span>{item.label}</span></div>)}</div>
       {story.evidenceNote && <p className="eng-evidence-note eng-reveal">{story.evidenceNote}</p>}
