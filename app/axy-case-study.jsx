@@ -44,8 +44,23 @@ export default function AxyCaseStudy({ story, next }) {
       <div className="eng-model-candidate eng-reveal"><div><span>MODEL COMPARISON / NOT YET SHIPPED</span><h2>{story.benchmark.modelTitle}</h2></div><div><p>{story.benchmark.modelBody}</p><p>{story.benchmark.modelFoot}</p></div></div>
     </section>}
 
+    {story.reviewDetails && <section className="eng-review eng-section" id="reliability">
+      <div className="eng-section-label eng-reveal"><span>05 / SAFETY IN PRACTICE</span><span>BEYOND THE HAPPY PATH</span></div>
+      <div className="eng-review-heading eng-reveal"><h2>{story.reviewDetails.heading}</h2><p>{story.reviewDetails.intro}</p></div>
+      {story.reviewDetails.technical && <div className="eng-technical">
+        <div className="eng-technical-heading eng-reveal"><div><p className="eng-overline">ENGINEERING DEEP DIVE</p><h3>{story.reviewDetails.technical.heading}</h3></div><p>{story.reviewDetails.technical.intro}</p></div>
+        <div className="eng-technical-card eng-reveal"><div className="eng-technical-card-heading"><div><span>01 / CONFLICT DETECTION</span><h4>{story.reviewDetails.technical.conflict.title}</h4></div><p>{story.reviewDetails.technical.conflict.description}</p></div>
+          <div className="eng-conflict-example"><p>{story.reviewDetails.technical.conflict.field}</p><div className="eng-conflict-values">{story.reviewDetails.technical.conflict.values.map((item) => <div key={item.label}><span>{item.label}</span><strong>{item.value}</strong><p>{item.detail}</p></div>)}</div><div className="eng-conflict-result"><span>↳</span><p>{story.reviewDetails.technical.conflict.result}</p></div></div><p className="eng-technical-note">{story.reviewDetails.technical.conflict.note}</p>
+        </div>
+        <div className="eng-technical-card eng-reveal"><div className="eng-technical-card-heading"><div><span>02 / IDEMPOTENT MERGE</span><h4>{story.reviewDetails.technical.retry.title}</h4></div><p>{story.reviewDetails.technical.retry.description}</p></div><ol className="eng-retry-steps">{story.reviewDetails.technical.retry.steps.map((step) => <li key={step.label}><span>{step.label}</span><p>{step.text}</p></li>)}</ol><p className="eng-technical-note">{story.reviewDetails.technical.retry.note}</p></div>
+      </div>}
+      <div className="eng-issue-panel eng-reveal"><div className="eng-issue-intro"><span>THE CONFLICT CHECK</span><strong>{story.reviewDetails.issueCount}</strong><p>issue types across five groups</p></div><div className="eng-issue-list">{story.reviewDetails.issues.map((issue, index) => <div key={issue.name}><span>{String(index + 1).padStart(2, '0')}</span><strong>{issue.name}</strong><span>{issue.disposition}</span></div>)}</div></div>
+      <div className="eng-review-notes"><article className="eng-review-note eng-reveal"><span>SECURITY / WHAT I FOUND</span><h3>{story.reviewDetails.auditTitle}</h3><p>{story.reviewDetails.auditBody}</p></article><article className="eng-review-note eng-reveal"><span>PRODUCT / WHAT I LEFT SIMPLE</span><h3>{story.reviewDetails.limitTitle}</h3><p>{story.reviewDetails.limitBody}</p></article></div>
+      <p className="eng-review-footnote eng-reveal">{story.reviewDetails.lockNote}</p>
+    </section>}
+
     <section className="eng-outcome eng-section">
-      <div className="eng-section-label eng-reveal"><span>{story.benchmark ? '06' : '05'} / THE OUTCOME</span><span>{story.outcomeLabel}</span></div>
+      <div className="eng-section-label eng-reveal"><span>{story.benchmark || story.reviewDetails ? '06' : '05'} / THE OUTCOME</span><span>{story.outcomeLabel}</span></div>
       <div className="eng-outcome-heading eng-reveal"><h2>{story.outcomeTitle}<br/><span>{story.outcomeAccent}</span></h2><p>{story.outcomeText}</p></div>
       <div className="eng-evidence eng-reveal">{story.evidence.map((item) => <div key={item.value}><strong>{item.value}</strong><span>{item.label}</span></div>)}</div>
       {story.evidenceNote && <p className="eng-evidence-note eng-reveal">{story.evidenceNote}</p>}

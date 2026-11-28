@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { caseStudies, getCaseStudy } from '../../../lib/case-studies.mjs';
 import { ProjectVisual } from '../../portfolio-sections';
 import AxyCaseStudy from '../../axy-case-study';
+import ScopeCaseStudy from '../../scope-case-study';
 import { axyStories } from '../../../lib/axy-stories.mjs';
 import { articleSchema, pageMetadata, serializeJsonLd } from '../../../lib/seo.mjs';
 
@@ -23,6 +24,7 @@ export default async function CaseStudyPage({ params }) {
   const structuredData = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(articleSchema({ title: study.name, description: study.intro, path: `/case-studies/${study.slug}`, type: 'CreativeWork' })) }} />;
 
   if (axyStories[slug]) return <>{structuredData}<AxyCaseStudy story={axyStories[slug]} next={next} /></>;
+  if (slug === 'scope-seeker') return <>{structuredData}<ScopeCaseStudy study={study} next={next} /></>;
 
   return <main className={`story-page story-page--${study.color}`}>{structuredData}
     <header className="story-header"><a className="brand" href="/" aria-label="Lokesh Dhakar, home">ld<span>.</span></a><a href="/#work" className="story-back">← <span>Back to selected work</span></a><a className="story-contact" href="mailto:lokeshdhakar1404@gmail.com">Let’s talk <span aria-hidden="true">↗</span></a></header>

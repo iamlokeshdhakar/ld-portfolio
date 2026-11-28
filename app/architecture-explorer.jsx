@@ -8,7 +8,7 @@ export default function ArchitectureExplorer({ stages, variant, diagramLabel }) 
 
   return <div className={`architecture architecture--${variant}`}>
     <div className="architecture-head"><div><span>THE SYSTEM / SIMPLIFIED</span><p>{diagramLabel}</p></div><span>SELECT A STEP TO EXPLORE</span></div>
-    <div className="architecture-stages" role="group" aria-label="Explore the system stages">
+    <div className="architecture-stages" style={{ '--stage-count': stages.length }} role="group" aria-label="Explore the system stages">
       {stages.map((stage, index) => <button key={stage.short} type="button" className={`architecture-stage ${index === activeIndex ? 'is-active' : ''}`} aria-pressed={index === activeIndex} onClick={() => setActiveIndex(index)}>
         <span className="architecture-stage-number">{stage.short}</span>
         <span className="architecture-stage-title">{stage.title}</span>

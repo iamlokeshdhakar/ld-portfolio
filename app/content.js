@@ -1,7 +1,7 @@
 export const projects = [
   {
-    slug: 'knowledge-graph', number: '01', kind: 'PRODUCT ENGINEERING · AXY', title: 'A living knowledge graph.',
-    description: 'A researcher workflow for proposing, reviewing, and safely merging changes into a scientific knowledge graph.',
+    slug: 'knowledge-graph', number: '01', kind: 'PRODUCT ENGINEERING · AXY', title: 'A safer way to edit a knowledge graph.',
+    description: 'A collaborative submission and review workflow that protects a live scientific graph from conflicting or unreviewed edits.',
     detail: 'PRODUCT DESIGN / DISTRIBUTED SYSTEMS', color: 'lilac', visual: 'graph',
     href: '/case-studies/knowledge-graph', caseStudy: '/case-studies/knowledge-graph', action: 'Read the case study',
   },
@@ -12,9 +12,9 @@ export const projects = [
     href: '/case-studies/hybrid-retrieval', caseStudy: '/case-studies/hybrid-retrieval', action: 'Read the case study',
   },
   {
-    slug: 'scope-seeker', number: '03', kind: 'FULL-STACK WEB APP', title: 'Scope Seeker.',
-    description: 'A job search platform connecting candidates and employers through listings, application tracking, and a resume builder.',
-    detail: 'NEXT.JS / NODE.JS / POSTGRESQL', color: 'peach', visual: 'scope',
+    slug: 'scope-seeker', number: '03', kind: 'STARTUP PROJECT · COLLEGE', title: 'Scope Seeker.',
+    description: 'A student startup attempt to make job discovery more relevant. Three of us built most of the frontend before pausing during placements.',
+    detail: 'PRODUCT RESEARCH / FRONTEND PROTOTYPE', color: 'peach', visual: 'scope',
     href: 'https://scopeseeker-frontend.vercel.app/', caseStudy: '/case-studies/scope-seeker', action: 'Visit project', code: 'https://github.com/iamlokeshdhakar/scope-seeker',
   },
   {
